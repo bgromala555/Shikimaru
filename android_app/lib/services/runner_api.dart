@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 
 import '../models/ask_models.dart';
@@ -12,11 +13,13 @@ import '../models/project_info.dart';
 /// HTTP + SSE client for the Cursor Runner desktop service.
 ///
 /// All methods throw [RunnerApiException] on non-2xx responses.
+/// When running as a web app, the base URL defaults to the current origin
+/// so the app can be served directly from the runner with no configuration.
 class RunnerApi {
   String _baseUrl;
 
   RunnerApi({String baseUrl = 'http://localhost:8423'})
-      : _baseUrl = baseUrl;
+      : _baseUrl = kIsWeb ? Uri.base.origin : baseUrl;
 
   /// Update the base URL (e.g. when the user changes connection settings).
   void setBaseUrl(String url) {

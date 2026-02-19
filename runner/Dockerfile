@@ -22,6 +22,9 @@ RUN uv pip install --system --no-cache .
 # Copy application source
 COPY runner/ runner/
 
+# Copy the pre-built Flutter web PWA
+COPY web_app/ web_app/
+
 # Default environment variables -- override at runtime
 ENV RUNNER_HOST=0.0.0.0 \
     RUNNER_PORT=8423 \

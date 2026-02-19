@@ -55,8 +55,10 @@ class _AppShellState extends State<_AppShell> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ConnectionProvider>().checkConnection();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final provider = context.read<ConnectionProvider>();
+      await provider.loadSavedUrl();
+      await provider.checkConnection();
     });
   }
 
@@ -65,7 +67,14 @@ class _AppShellState extends State<_AppShell> {
     final connection = context.watch<ConnectionProvider>();
     final project = context.watch<ProjectProvider>();
 
-    if (!connection.isConnected && !connection.isChecking) {
+    // Wait for the saved URL to load before showing the onboarding screen
+    if (!connection.hasLoadedSavedUrl || connection.isChecking) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (!connection.isConnected) {
       return const SettingsScreen(isOnboarding: true);
     }
 

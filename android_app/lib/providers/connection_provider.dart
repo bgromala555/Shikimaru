@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/runner_api.dart';
 
@@ -9,6 +10,7 @@ import '../services/runner_api.dart';
 /// Tracks whether the runner is reachable, what Cursor CLI version it reports,
 /// and allows the user to change the runner URL from settings.
 ///
+/// The runner URL is persisted to local storage so it survives app restarts.
 /// A periodic health check runs every [_healthIntervalSeconds] seconds so that
 /// connection drops and recoveries are detected automatically.
 class ConnectionProvider extends ChangeNotifier {
@@ -19,8 +21,10 @@ class ConnectionProvider extends ChangeNotifier {
   String _cursorVersion = '';
   String _errorMessage = '';
   Timer? _healthTimer;
+  bool _hasLoadedSavedUrl = false;
 
   static const int _healthIntervalSeconds = 30;
+  static const String _urlStorageKey = 'runner_base_url';
 
   ConnectionProvider(this._api);
 
@@ -29,10 +33,26 @@ class ConnectionProvider extends ChangeNotifier {
   String get cursorVersion => _cursorVersion;
   String get errorMessage => _errorMessage;
   String get baseUrl => _api.baseUrl;
+  bool get hasLoadedSavedUrl => _hasLoadedSavedUrl;
 
-  /// Update the runner URL and re-check connectivity.
+  /// Load the previously saved runner URL from local storage, then check
+  /// connectivity. Call this once at app startup before [checkConnection].
+  Future<void> loadSavedUrl() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedUrl = prefs.getString(_urlStorageKey);
+    if (savedUrl != null && savedUrl.isNotEmpty) {
+      _api.setBaseUrl(savedUrl);
+    }
+    _hasLoadedSavedUrl = true;
+    notifyListeners();
+  }
+
+  /// Update the runner URL, persist it to local storage, and re-check
+  /// connectivity.
   Future<void> setBaseUrl(String url) async {
     _api.setBaseUrl(url);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_urlStorageKey, _api.baseUrl);
     await checkConnection();
   }
 

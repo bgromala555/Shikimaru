@@ -1,6 +1,6 @@
 # Shikigami
 
-Control Cursor's AI agent from your phone. Ask questions, build plans, review them, and execute code changes -- all from a chat interface on your Android device, while Cursor runs on your desktop.
+Control Cursor's AI agent from your phone. Ask questions, build plans, review them, and execute code changes -- all from a chat interface on your Android or iOS device, while Cursor runs on your desktop.
 
 Your phone connects to the runner over [Tailscale](https://tailscale.com/), so it works from anywhere -- not just your local Wi-Fi. Couch, coffee shop, different building, doesn't matter. As long as both devices are signed into Tailscale, they can talk to each other.
 
@@ -12,8 +12,10 @@ Your phone connects to the runner over [Tailscale](https://tailscale.com/), so i
 |                  |                          |                  |
 +------------------+                          +--------+---------+
                                                        |
-                                                       | subprocess
-                                                       v
++------------------+        HTTP/JSON                  |
+|  iOS / Browser   |  <---- via Tailscale ---->        |
+|  (Web PWA)       |     served from runner            | subprocess
++------------------+                                   v
                                               +------------------+
                                               | Cursor Agent CLI |
                                               | (Node.js)        |
@@ -27,6 +29,8 @@ The system has two parts:
 - **Runner** (`runner/`) -- A Python FastAPI service that runs on your desktop inside a Docker container. It receives HTTP requests from your phone, translates them into Cursor Agent CLI invocations, and streams results back. Think of it as a bridge between your phone and the Cursor agent.
 
 - **Android App** (`android_app/`) -- A Flutter app that provides a chat interface for interacting with the runner. Supports voice input, Markdown rendering, plan review, and live execution monitoring.
+
+- **Web PWA** (`runner/web_app/`) -- A pre-built Flutter web app served directly from the runner. Open it in any browser (including iOS Safari) and add it to your home screen for a native app experience. No App Store or Mac required.
 
 Your phone and desktop find each other through **Tailscale**, a zero-config VPN that gives each device a stable IP address. No port forwarding, no firewall rules, no "are we on the same Wi-Fi?" headaches.
 
@@ -130,11 +134,21 @@ http://localhost:8423/docs       # Interactive Swagger UI
 
 ### Step 6 -- Connect from your phone
 
-Open the Android app (or your phone's browser) and connect using your PC's **Tailscale IP** from Step 3:
+**Android app:** Open the Shikigami app and enter your PC's Tailscale IP from Step 3: `http://100.x.x.x:8423`
+
+**iPhone / iPad (Web PWA):** Open Safari and go to:
 
 ```
 http://100.x.x.x:8423
 ```
+
+Replace `100.x.x.x` with your Tailscale IP. The runner automatically redirects to the built-in web app. To install it as a home-screen app:
+
+1. Tap the **Share** button (square with arrow) in Safari
+2. Scroll down and tap **Add to Home Screen**
+3. Tap **Add**
+
+The app will launch full-screen with no browser chrome -- it looks and feels like a native app. No App Store, no Mac, no build tools needed. The connection to the runner is automatic since the app is served from it.
 
 Replace `100.x.x.x` with the IP you copied. Anywhere you see `localhost` in configuration or docs, you can swap it for this Tailscale IP to access the runner from your phone.
 
@@ -243,6 +257,50 @@ The runner starts on `http://0.0.0.0:8423`. If you see a port-in-use error, see 
 
 ---
 
+## iOS / Web PWA
+
+The runner includes a pre-built Flutter web app at `/app`. When you open the runner URL in any browser, it redirects to the full Shikigami chat UI automatically. No build tools, no Flutter SDK, and no Mac needed.
+
+### Install as a home-screen app on iPhone
+
+1. Open Safari on your iPhone
+2. Navigate to `http://<Tailscale-IP>:8423`
+3. Tap the **Share** button (square with up arrow)
+4. Tap **Add to Home Screen**
+5. Tap **Add**
+
+The app launches full-screen with a dark theme, just like a native app.
+
+### Rebuilding the web app (after Flutter code changes)
+
+If you modify the Flutter source in `android_app/`, rebuild the web PWA:
+
+```bash
+cd android_app
+flutter build web --release --base-href "/app/"
+```
+
+Then copy the build output to the runner:
+
+```bash
+# Remove old build
+rm -rf runner/web_app
+
+# Copy new build (PowerShell)
+Copy-Item -Path android_app\build\web -Destination runner\web_app -Recurse
+
+# Copy new build (macOS/Linux)
+cp -r android_app/build/web runner/web_app
+```
+
+Rebuild the Docker container to pick up the changes:
+
+```bash
+docker compose up --build
+```
+
+---
+
 ## Android App Setup
 
 ### Build from source
@@ -305,6 +363,7 @@ PHONEAPP/
 │   │   ├── routers/                 # API endpoints (ask, plan, approve, etc.)
 │   │   ├── services/                # Cursor invoker, job manager, prompts
 │   │   └── templates/               # .cursor/rules for new projects
+│   ├── web_app/                     # Pre-built Flutter web PWA (served at /app)
 │   ├── tests/
 │   ├── Dockerfile
 │   └── pyproject.toml

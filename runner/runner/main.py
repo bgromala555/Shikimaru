@@ -4,17 +4,25 @@ This module creates the FastAPI ``app`` instance, registers all routers, and
 wires the shared ``JobManager`` into each router module.  The server is started
 via ``uvicorn`` using the settings from ``runner.config``.
 
+The runner also serves the Flutter web build as a PWA so users can access the
+full Shikigami UI from any browser — including iOS Safari with home-screen
+install support.
 """
 
 import logging
+from pathlib import Path
 
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 
 from runner.config import RunnerSettings
 from runner.routers import approve, ask, events, execute, health, plan, projects
 from runner.services.job_manager import JobManager
+
+WEB_APP_DIR = Path(__file__).resolve().parent.parent / "web_app"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -68,6 +76,20 @@ def create_app() -> FastAPI:
     app.include_router(approve.router)
     app.include_router(execute.router)
     app.include_router(events.router)
+
+    # Serve the Flutter web PWA when the build directory exists.
+    # Mounted last so API routes always take priority.
+    if WEB_APP_DIR.is_dir():
+        app.mount("/app", StaticFiles(directory=str(WEB_APP_DIR), html=True), name="web_app")
+
+        @app.get("/")
+        async def _redirect_root() -> RedirectResponse:
+            """Redirect the bare root URL to the web app."""
+            return RedirectResponse(url="/app/")
+
+        logger.info("Web PWA mounted from %s", WEB_APP_DIR)
+    else:
+        logger.warning("Web app directory not found at %s -- PWA disabled", WEB_APP_DIR)
 
     logger.info(
         "Shikigami runner initialised -- project_root=%s, artifacts=%s",
