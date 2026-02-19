@@ -30,7 +30,7 @@ The system has two parts:
 
 - **Android App** (`android_app/`) -- A Flutter app that provides a chat interface for interacting with the runner. Supports voice input, Markdown rendering, plan review, and live execution monitoring.
 
-- **Web PWA** (`runner/web_app/`) -- A pre-built Flutter web app served directly from the runner. Open it in any browser (including iOS Safari) and add it to your home screen for a native app experience. No App Store or Mac required.
+- **Web PWA** (`runner/web_app/`) -- *Under construction.* A pre-built Flutter web app served from the runner at `/app`. Intended for browser and iOS home-screen use. Not yet fully functional -- see [Known Issues & Roadmap](#known-issues--roadmap).
 
 Your phone and desktop find each other through **Tailscale**, a zero-config VPN that gives each device a stable IP address. No port forwarding, no firewall rules, no "are we on the same Wi-Fi?" headaches.
 
@@ -278,9 +278,11 @@ The runner starts on `http://0.0.0.0:8423`. If you see a port-in-use error, see 
 
 ---
 
-## iOS / Web PWA
+## iOS / Web PWA (Under Construction)
 
-The runner includes a pre-built Flutter web app at `/app`. When you open the runner URL in any browser, it redirects to the full Shikigami chat UI automatically. No build tools, no Flutter SDK, and no Mac needed.
+> **Status:** The web PWA is included in the runner but is not yet fully functional. It is served at `/app` and can load in a browser, but has not been tested end-to-end on iOS Safari. This is an active area of development.
+
+The runner includes a pre-built Flutter web app at `/app`. When you open the runner URL in any browser, it redirects to the Shikigami chat UI. The goal is to support iPhone and iPad users without requiring a Mac or the App Store.
 
 ### Install as a home-screen app on iPhone
 
@@ -438,6 +440,38 @@ These agent CLIs have similar capabilities and could be adapted:
 - **Codex CLI** (`codex`) -- OpenAI's coding agent. Supports sandboxed execution.
 
 Each of these would need a custom invoker that translates the runner's prompt format into the tool's expected input and parses the output back into `AgentResult`.
+
+---
+
+## Known Issues & Roadmap
+
+### Known Issues
+
+- **Approve & Execute button partially hidden** -- On some Android devices, the "Approve & Execute" button at the bottom of the plan review screen is partially obscured by the bottom navigation bar. A layout fix is coming to add proper padding so the button is always fully visible and tappable.
+
+- **Web PWA not fully tested** -- The Flutter web build loads in the browser but has not been validated end-to-end on iOS Safari. Connection auto-detection, SSE streaming, and speech-to-text may behave differently in a browser context. This is under active development.
+
+### Roadmap
+
+- **Fix Approve & Execute button overlap** -- Adjust bottom padding on the plan review and execution screens so the action button clears the navigation bar on all devices.
+- **Native iOS app** -- A full native iOS build of the Flutter app is planned. This requires a macOS build environment (Xcode). Once available, the iOS app will be distributed via TestFlight or direct `.ipa` install.
+- **Web PWA stabilization** -- Complete testing and fix any issues with the browser-based PWA so it works reliably on iOS Safari, Chrome, and other mobile browsers.
+- **Runner URL persistence** -- The Android app now saves the runner URL locally. Verify this works across app updates and device restarts.
+
+---
+
+## Contributing
+
+This repo uses **branch protection** on `main`. Direct pushes to `main` are restricted to the repository owner.
+
+To contribute:
+
+1. **Fork** the repository (or create a feature branch)
+2. Make your changes
+3. Open a **pull request** against `main`
+4. The PR will be reviewed before merging
+
+Do not push directly to `main` -- all changes from contributors must go through a pull request.
 
 ---
 
