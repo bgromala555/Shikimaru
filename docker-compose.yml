@@ -1,0 +1,21 @@
+services:
+  runner:
+    build: ./runner
+    ports:
+      - "${RUNNER_PORT:-8423}:8423"
+    volumes:
+      # Mount your projects folder so the runner can read/write your code.
+      # Set PROJECT_ROOT in .env to point to your projects directory.
+      - ${PROJECT_ROOT:-~/Downloads/_projects}:/projects
+
+      # Persist job artifacts across container restarts
+      - runner-artifacts:/data/jobs
+    environment:
+      - RUNNER_PORT=8423
+      - RUNNER_PROJECT_ROOT=/projects
+      - RUNNER_ARTIFACTS_DIR=/data/jobs
+      - CURSOR_API_KEY=${CURSOR_API_KEY}
+    restart: unless-stopped
+
+volumes:
+  runner-artifacts:

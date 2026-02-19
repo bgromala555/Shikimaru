@@ -1,0 +1,36 @@
+# Secrets / machine-specific
+.env
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+
+# Linter / type-checker caches
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+*.suo
+*.user
+*.sln.docuser.user
+
+# Flutter / Dart (covered by android_app/.gitignore but belt-and-suspenders)
+android_app/build/
+android_app/.dart_tool/
+android_app/.flutter-plugins-dependencies
