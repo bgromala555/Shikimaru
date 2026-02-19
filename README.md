@@ -42,6 +42,27 @@ Your phone and desktop find each other through **Tailscale**, a zero-config VPN 
 4. **Approve & Execute** -- One tap to approve and start execution. The agent implements the plan with full file access.
 5. **Monitor** -- Watch execution progress in real-time from the chat screen.
 
+### Screenshots
+
+<p align="center">
+<img src="screenshots/s1.jpg" width="200" alt="Settings — connect to the runner">
+<img src="screenshots/s2.jpg" width="200" alt="Project picker — select a project">
+<img src="screenshots/s3.jpg" width="200" alt="Create a new project">
+<img src="screenshots/s4.jpg" width="200" alt="Chat screen — Ask or Plan">
+</p>
+
+<p align="center">
+<img src="screenshots/s5.jpg" width="200" alt="Ask mode — agent thinking">
+<img src="screenshots/s6.jpg" width="200" alt="Plan mode — building a plan">
+<img src="screenshots/s7.jpg" width="200" alt="Generated plan — step-by-step implementation">
+<img src="screenshots/s8.jpg" width="200" alt="Plan details — commands and Approve & Execute">
+</p>
+
+<p align="center">
+<img src="screenshots/s9.jpg" width="200" alt="Execution in progress — live event stream">
+<img src="screenshots/s10.jpg" width="200" alt="Execution complete — success">
+</p>
+
 ---
 
 ## Setup
